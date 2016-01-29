@@ -12,7 +12,7 @@ alphabet :: [Char]
 alphabet = [' '] ++ ['a'..'z']
 
 threshold :: Double
-threshold = 0.7
+threshold = 0.5
 
 minValidChar = 0x20
 maxValidChar = 0x80
@@ -20,6 +20,11 @@ maxValidChar = 0x80
 isPlaintext :: String -> Bool
 isPlaintext s = ((chiSquaredString s englishFreqs) < threshold)
  -- (noCtrlChars (fromText s)) && 
+
+avgWordLength s = (fromIntegral $ length s ) / fromIntegral (length $ words s)
+
+madeOfWords :: String -> Bool
+madeOfWords s = (avgWordLength s < 8.0) && (avgWordLength s > 2.0)
 
 noCtrlChars :: Plain -> Bool
 noCtrlChars p = not $ any (\c -> (c <= minValidChar) || (c >= maxValidChar)) p
@@ -46,7 +51,7 @@ chiSquaredString string langFreqs =
   where o = actualFreqs string
         e = langFreqs
 
-plaintextScore = chiSquaredString
+plaintextScore s = chiSquaredString s englishFreqs
 
 {- from http://www.math.cornell.edu/~mec/2003-2004/cryptography/subs/frequencies.html -}
 englishFreqs :: FreqMap

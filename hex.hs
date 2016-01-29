@@ -1,6 +1,6 @@
 {- Hexadecimal utilkity functions -}
 
-module Hex where
+module Hex (hexEncode, hexDecode) where
 
 import Numeric (readHex)
 import Data.Char (ord,
@@ -44,3 +44,8 @@ hexEncodeString s = padEven $ bytesToHex $ map ord s
 
 hexDecodeString :: String -> String
 hexDecodeString s =  map chr (hexToBytes s)
+
+hexEncode :: [Int] -> String
+hexEncode = bytesToHex
+hexDecode :: String -> [Int]
+hexDecode = hexToBytes

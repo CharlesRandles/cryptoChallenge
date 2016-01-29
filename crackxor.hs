@@ -1,25 +1,35 @@
 module CrackXor where
 
 import Data.List (sortBy)
+import Data.Char
 
 import Crypto
 import Plaintext
 import XorEncode
+import Plaintext
 
-keyAlphabet :: [Char]
-keyAlphabet = ['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9']
+keyAlphabet :: Key
+keyAlphabet = fromText (['a'..'z'] ++ ['A'..'Z'])
+--keyAlphabet = [0..0xff]
+--keyAlphabet = fromText ['a'..'z']
+--keyAlphabet = charToKey '5'
+ 
+decodes :: Cipher -> [(Key, Plain)]
+decodes cipher = [([kc], xorEncode cipher [kc]) | kc <- keyAlphabet]
 
-decodes :: Ciphertext -> [(Char, Plaintext)]
-decodes cipher = [(c, xorEncode cipher (charToKey c)) | c <- keyAlphabet]
+scoredDecodes :: Cipher -> [(Key, Double, Plain)]
+scoredDecodes c = [(k, plaintextScore (toText p), p) | (k,p) <- decodes c]
 
-cp (c1, p1) (c2, p2) = compare
-                       (chiSquaredString (toText p1)) (chiSquaredString (toText p2))
+minScore :: (Key, Double, Plain) -> (Key, Double, Plain) -> Ordering
+minScore (_,x,_) (_,y,_) = compare x y
 
-guesses cipher = sortBy cp
-                 $  filter (\(c, pt) -> isPlaintext (toText pt))
-                 (decodes cipher)
+best cipher = head $ sortBy minScore $ scoredDecodes cipher
 
-textGuesses cipher = map (\(k, pt) -> (k, (toText pt))) (guesses cipher)
+isNotRubbish :: String -> Bool
+isNotRubbish s = (all (\c -> (isPrint c) || (isSpace c)) s)  && (madeOfWords s)
+
+dodgies :: Cipher -> [(Key, Plain)]
+dodgies c = filter (\(k, p) -> isNotRubbish (toText p)) $ decodes c
 
 plaintext :: String
 plaintext = "Almost all cryptography is less secure than people think."
