@@ -9,8 +9,8 @@ import XorEncode
 import Plaintext
 
 keyAlphabet :: Key
-keyAlphabet = fromText (['a'..'z'] ++ ['A'..'Z'])
---keyAlphabet = [0..0xff]
+--keyAlphabet = fromText (['a'..'z'] ++ ['A'..'Z'] )
+keyAlphabet = [0..0xff]
 --keyAlphabet = fromText ['a'..'z']
 --keyAlphabet = charToKey '5'
  
@@ -26,7 +26,8 @@ minScore (_,x,_) (_,y,_) = compare x y
 best cipher = head $ sortBy minScore $ scoredDecodes cipher
 
 isNotRubbish :: String -> Bool
-isNotRubbish s = (all (\c -> (isPrint c) || (isSpace c)) s)  && (madeOfWords s)
+--Consider isPrint
+isNotRubbish s = (all (\c -> (isAlphaNum c) || (isSpace c)) s)   && (madeOfWords s)
 
 dodgies :: Cipher -> [(Key, Plain)]
 dodgies c = filter (\(k, p) -> isNotRubbish (toText p)) $ decodes c

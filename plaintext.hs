@@ -24,7 +24,7 @@ isPlaintext s = ((chiSquaredString s englishFreqs) < threshold)
 avgWordLength s = (fromIntegral $ length s ) / fromIntegral (length $ words s)
 
 madeOfWords :: String -> Bool
-madeOfWords s = (avgWordLength s < 8.0) && (avgWordLength s > 2.0)
+madeOfWords s = (avgWordLength s > 2.0) && (avgWordLength s < 8.0)
 
 noCtrlChars :: Plain -> Bool
 noCtrlChars p = not $ any (\c -> (c <= minValidChar) || (c >= maxValidChar)) p
