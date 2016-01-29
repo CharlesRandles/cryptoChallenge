@@ -1,60 +1,90 @@
-{- Heuristics for detecting plaintext -}
-
 module Plaintext where
 
-import Data.Char
+import Data.Char (toLower)
+import Data.Maybe (fromJust)
 
 import Crypto
 
-type FreqMap = [(Char, Int)]
-type FreqPair = (Char, Char)
+type IntFreqMap = [(Char, Int)]
+type FreqMap = [(Char, Double)]
 
-toText = map chr
-fromText = map ord
+alphabet :: [Char]
+alphabet = [' '] ++ ['a'..'z']
 
-isPlaintext :: Plain -> Bool
-isPlaintext s = True
-                && (plainTextScore s > 2)
-              --  && (letterPercentage s > 0.80) 
-             --   && (avgWordLength s < 10.0) -- || True
+threshold :: Double
+threshold = 0.7
 
-isKey s = True
-          && (letterPercentage s > 0.9)
+minValidChar = 0x20
+maxValidChar = 0x80
 
-plainTextScore s = freqScore (letterFreqs s) expecteds
+isPlaintext :: String -> Bool
+isPlaintext s = ((chiSquaredString s englishFreqs) < threshold)
+ -- (noCtrlChars (fromText s)) && 
 
-expecteds :: [FreqPair]
-expecteds = [('e', 't'), -- e is more frequent than s
-             ('t', 'a'),
-             ('a', 'o'),
-             ('o', 'i'),
-             ('i', 'n'),
-             ('n', 's'),
-             ('s', 'h'),
-             ('h', 'r'),
-             ('r', 'd'),
-             ('d', 'l'),
-             ('l', 'c')]
+noCtrlChars :: Plain -> Bool
+noCtrlChars p = not $ any (\c -> (c <= minValidChar) || (c >= maxValidChar)) p
 
-freqScore :: FreqMap -> [FreqPair] -> Int
-freqScore m e = freqScore' 0 m e
-freqScore' :: Int -> FreqMap -> [FreqPair] -> Int
-freqScore' n m [] = n
-freqScore' n m (p:ps) = if frequency m (fst p) > frequency m (snd p) 
-                      then freqScore' (n+1) m ps
-                      else freqScore' (n-1) m ps
+justLookup c cs= fromJust $ lookup c cs
 
 occurrences :: Eq a => a -> [a] -> Int
-occurrences x = length . filter (\e -> x == e)
+occurrences a as = length $ filter (\c -> c == a)  as
 
-letterFreqs :: Plain -> FreqMap
-letterFreqs s = [(c, occurrences c (map toLower (toText s))) | c <- ['a'..'z']]
+freqs :: String -> IntFreqMap
+freqs s = [(c, occurrences c (map toLower s)) | c <- alphabet]
 
-frequency :: FreqMap -> Char -> Int
-frequency map char = snd $ head $ filter (\p -> fst p == char) map
+actualFreqs :: String -> FreqMap
+actualFreqs s= [(c, (fromIntegral n) / l) | (c,n) <- freqs s]
+               where l = fromIntegral $ length s
 
-isLegitChar c = (isAlphaNum c) || (c `elem` " !@#$%^&*()-=_+{}[];:,<.>/?") 
+chiSquared :: [(Double, Double)] -> Double
+chiSquared dataSet = sum [((o - e) * (o - e)) / e | (o,e) <- dataSet]
 
-letterPercentage s = (fromIntegral $ length (filter isLegitChar (toText s))) / (fromIntegral  $ length s)
+chiSquaredString :: String -> FreqMap -> Double
+chiSquaredString string langFreqs =
+  chiSquared [((justLookup c o), (justLookup c e))
+             | c <- alphabet]
+  where o = actualFreqs string
+        e = langFreqs
 
-avgWordLength s = ((fromIntegral . length) s) / ((fromIntegral .length . words) (toText s))
+plaintextScore = chiSquaredString
+
+{- from http://www.math.cornell.edu/~mec/2003-2004/cryptography/subs/frequencies.html -}
+englishFreqs :: FreqMap
+englishFreqs = [(' ',  0.121),
+                ('e', 0.1202 ),
+                ('t', 0.0910 ),
+                ('a', 0.0812 ),
+                ('o', 0.0768 ),
+                ('i', 0.0731 ),
+                ('n', 0.0695 ),
+                ('s', 0.0628 ),
+                ('r', 0.0602 ),
+                ('h', 0.0592 ),
+                ('d', 0.0432 ),
+                ('l', 0.0398 ),
+                ('u', 0.0288 ),
+                ('c', 0.0271 ),
+                ('m', 0.0261 ),
+                ('f', 0.0230 ),
+                ('y', 0.0211 ),
+                ('w', 0.0209 ),
+                ('g', 0.0203 ),
+                ('p', 0.0182 ),
+                ('b', 0.0149 ),
+                ('v', 0.0111 ),
+                ('k', 0.0069 ),
+                ('x', 0.0017 ),
+                ('q', 0.0011 ),
+                ('j', 0.0010 ),
+                ('z', 0.0007 )]
+
+testTexts :: [String]
+testTexts = ["Now is the winter of our discontent, made glorious summer by this son of York"
+            ,"This challenge isn't conceptually hard, but it involves actual error-prone coding. The other challenges in this set are there to bring you up to speed."
+            ,"wokka wokka!!!"
+            ,"qjtpgfdvggoteklwzvndfstbguwvpycwgfbtermtquoxmsleybzqruyvispfouzaskekzc"
+            ,"bwipzyaesdtxannkfhexhlcinfitbqgycubtcograrddvxxojltgyuhzwhpwnfyjospwbc"
+            ,"Nous n'avons pas des aliments, at j'ai tres, tres faim."
+            ,"Wer reitet so spät durch Nacht und Wind? Es ist der Vater mit seinem Kind"
+            ,"Dans ce pays-ci, il est bon de tuer de temps en temps un amiral pour encourager les autres"
+            ]
