@@ -28,7 +28,7 @@ toBase64Char n  = base64Chars !! n
 
 fromBase64Char c =fromJust $ elemIndex c base64Chars 
 
-base64Bytes s = concat $ map sixBitChunks $ triples $ hexToBytes $ padToTriples s
+base64Bytes s = concat $ map sixBitChunks $ triples $ hexDecode $ padToTriples s
 
 base64encode s = (map toBase64Char $ base64Bytes s) ++ (tailPad s)
 base64 = base64encode

@@ -1,6 +1,9 @@
 module Plaintext where
 
-import Data.Char (toLower)
+import Data.Char (toLower,
+                  isPrint,
+                  isAlphaNum,
+                  isSpace)
 import Data.Maybe (fromJust)
 
 import Crypto

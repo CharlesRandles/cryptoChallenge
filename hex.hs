@@ -1,6 +1,9 @@
 {- Hexadecimal utilkity functions -}
 
-module Hex (hexEncode, hexDecode) where
+module Hex (hexEncode,
+            hexDecode,
+            triples,
+            ) where
 
 import Numeric (readHex)
 import Data.Char (ord,
