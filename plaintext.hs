@@ -7,12 +7,12 @@ import Crypto
 
 type IntFreqMap = [(Char, Int)]
 type FreqMap = [(Char, Double)]
-
+type Score = Double 
 alphabet :: [Char]
 alphabet = [' '] ++ ['a'..'z']
 
 threshold :: Double
-threshold = 0.5
+threshold = 1.7
 
 minValidChar = 0x20
 maxValidChar = 0x80
@@ -24,10 +24,14 @@ isPlaintext s = ((chiSquaredString s englishFreqs) < threshold)
 avgWordLength s = (fromIntegral $ length s ) / fromIntegral (length $ words s)
 
 madeOfWords :: String -> Bool
-madeOfWords s = (avgWordLength s > 2.0) && (avgWordLength s < 8.0)
+madeOfWords s = (avgWordLength s > 2.0) && (avgWordLength s < 10.0)
 
 noCtrlChars :: Plain -> Bool
 noCtrlChars p = not $ any (\c -> (c <= minValidChar) || (c >= maxValidChar)) p
+
+isNotRubbish :: String -> Bool
+--Consider isPrint
+isNotRubbish s = (all (\c -> (isAlphaNum c) || (isSpace c)) s)   && (madeOfWords s)
 
 justLookup c cs= fromJust $ lookup c cs
 
@@ -41,10 +45,10 @@ actualFreqs :: String -> FreqMap
 actualFreqs s= [(c, (fromIntegral n) / l) | (c,n) <- freqs s]
                where l = fromIntegral $ length s
 
-chiSquared :: [(Double, Double)] -> Double
+chiSquared :: [(Double, Double)] -> Score
 chiSquared dataSet = sum [((o - e) * (o - e)) / e | (o,e) <- dataSet]
 
-chiSquaredString :: String -> FreqMap -> Double
+chiSquaredString :: String -> FreqMap -> Score
 chiSquaredString string langFreqs =
   chiSquared [((justLookup c o), (justLookup c e))
              | c <- alphabet]
