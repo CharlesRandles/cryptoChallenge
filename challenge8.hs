@@ -1,12 +1,6 @@
-import Data.List
-import Data.List.Split
+import CryptoChallenge
 
-hasDupeChunks :: Eq a => Int -> [a] -> Bool
-hasDupeChunks chunkSize xs =
-  (length chunks) /= (length $ nub chunks)
-  where chunks = chunksOf chunkSize xs
-
-candidates n xs = filter (hasDupeChunks n) xs
+candidates n xs = filter (hasDuplicateChunks n) xs
 
 main = do
   putStrLn $ show $ candidates 32 ciphers

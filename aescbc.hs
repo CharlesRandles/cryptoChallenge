@@ -1,4 +1,7 @@
-module AESCBC where
+module AESCBC (ecbEncrypt,
+               ecbDecrypt,
+               cbcEncrypt,
+               cbcDecrypt) where
 
 import Crypto.Cipher.AES
 import Data.ByteString.Char8 (pack, unpack)
@@ -14,14 +17,14 @@ import CryptoChallenge
 import XorEncode
 import PKCS7
 
-aesBlocksize :: Int
-aesBlocksize = 0x10 -- Because the standard says so
-
 toByteString :: Cipher -> B.ByteString
 toByteString  c = pack (toString c)
 
 fromByteString :: B.ByteString -> Cipher
 fromByteString = fromString . unpack
+
+ecbEncrypt = encryptECB
+ecbDecrypt = decryptECB
 
 cbcEncrypt :: AES -> ByteString -> ByteString -> ByteString
 cbcEncrypt key vector plaintext
@@ -45,4 +48,4 @@ cbcDecrypt key vector ciphertext
 key = initAES $ pack "YELLOW SUBMARINE"
 vector = pack $ toString $  replicate aesBlocksize 0
 
-plaintext = pack $ toString $ pkcs7 (fromString "Now is the winter of our discontent") aesBlocksize
+plaintext = pack $ toString $ pkcs7 (fromString "Now is the winter of our discontent - made glorious summer by this son of York. ") aesBlocksize
