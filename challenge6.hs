@@ -2,7 +2,7 @@ module Challenge6 where
 
 import Data.Char
 
-import Crypto
+import CryptoChallenge
 import Base64
 import Hex
 import CrackXor
@@ -15,17 +15,17 @@ cipher = xorEncodeText text key
 aesKey = "mouse"
 aesCipher = xorEncodeText aesText aesKey
 
-recoverKey cipher = toText $ crackRepeatXor cipher
+recoverKey cipher = toString $ regenKey $ transposeChunks cipher 29 --crackRepeatXor cipher
 
 --Let's point this at the real data
 cipher6 = base64Decode rawData
 k = recoverKey cipher6
-plain = toText $ xorEncode cipher6 (fromText k)
+plain = toString $ xorEncode cipher6 (fromString k)
 
---Key length is 29
---The key: "Terminator X: Bring the noise"
-c6k = "Terminator X: Bring the noise"
-plain6 = toText $ xorEncode cipher6 (fromText c6k) -- Plaintext
+c6k = xorEncode [0,16,0,4,7,9,53,1,29,27,78,63,110,85,48,27,7,9,51,85,6,1,11,71,58,26,27,26,11]
+                (fromString "Turing")
+
+plain6 = toString $ xorEncode cipher6 c6k -- Plaintext
 
 aesText = concat [ "The Advanced Encryption Standard (AES), also known as Rijndael[4][5]",
                    " (its original name), is a specification for the encryption of electronic data ,established ",

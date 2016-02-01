@@ -6,7 +6,7 @@ import Data.Char (toLower,
                   isSpace)
 import Data.Maybe (fromJust)
 
-import Crypto
+import CryptoChallenge
 
 type IntFreqMap = [(Char, Int)]
 type FreqMap = [(Char, Double)]

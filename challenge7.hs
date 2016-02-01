@@ -6,7 +6,7 @@ import Crypto.Cipher.AES
 import Data.ByteString.Char8 (pack)
 
 import Base64
-import Crypto
+import CryptoChallenge
 
 key = "YELLOW SUBMARINE"
 initVector = initAES (pack key)
