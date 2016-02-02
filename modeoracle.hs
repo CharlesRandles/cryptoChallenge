@@ -7,13 +7,13 @@ import Data.ByteString.Char8 (pack,
 import Crypto.Cipher.AES
 
 import CryptoChallenge
-import AESCBC
+import AES
 
 data Mode = ECB | Chaining
      deriving (Show, Eq)
 
 -- Must cause a whole 16-byte block to be all the same
-plaintext = pack (replicate (2 * aesBlocksize) '\NUL') 
+plaintext = pack (replicate (3 * aesBlocksize) '\NUL') 
 
 {- A chosen-plaintext oracle for whether AES is in ECB mode or not -}
 modeOracle :: (ByteString -> ByteString) -> Mode

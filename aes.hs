@@ -23,7 +23,8 @@ toByteString  c = pack (toString c)
 fromByteString :: B.ByteString -> Cipher
 fromByteString = fromString . unpack
 
-ecbEncrypt = encryptECB
+ecbEncrypt :: AES -> ByteString -> ByteString
+ecbEncrypt k s = encryptECB k $ pack $ toString (pkcs7 (fromString $ unpack s) 16)
 ecbDecrypt = decryptECB
 
 cbcEncrypt :: AES -> ByteString -> ByteString -> ByteString
