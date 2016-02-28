@@ -1,9 +1,11 @@
+{-# LANGUAGE PackageImports #-}
+
 module AESCBC (ecbEncrypt,
                ecbDecrypt,
                cbcEncrypt,
                cbcDecrypt) where
 
-import Crypto.Cipher.AES
+import "cipher-aes" Crypto.Cipher.AES
 import Data.ByteString.Char8 (pack, unpack)
 import Data.ByteString as B (ByteString,
                              take,

@@ -1,9 +1,13 @@
+{-# LANGUAGE PackageImports #-}
+
 module AES (ecbEncrypt,
             ecbDecrypt,
             cbcEncrypt,
-            cbcDecrypt) where
+            cbcDecrypt,
+            encryptString,
+            decryptString,) where
 
-import Crypto.Cipher.AES
+import "cipher-aes" Crypto.Cipher.AES
 import Data.ByteString.Char8 (pack, unpack)
 import Data.ByteString as B (ByteString,
                              take,
@@ -45,7 +49,17 @@ cbcDecrypt key vector ciphertext
                                (xorByteString (decryptECB key cipherblock) vector)
                                (cbcDecrypt key cipherblock (B.drop aesBlocksize ciphertext))
                              
+encryptString :: String -> String -> String -> String
+encryptString key iv plaintext = unpack $ cbcEncrypt 
+                                            (initAES (pack key)) 
+                                            (pack iv) 
+                                            (pack (pkcs7String plaintext 0x10))
 
+decryptString :: String -> String -> String -> String
+decryptString key iv ciphertext = unpack $ cbcDecrypt
+                                             (initAES (pack key))
+                                             (pack iv)         
+                                             (pack ciphertext)
 key = initAES $ pack "YELLOW SUBMARINE"
 vector = pack $ toString $  replicate aesBlocksize 0
 
